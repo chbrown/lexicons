@@ -1,0 +1,4 @@
+.DS_Store
+lexicons.egg-info/
+/log/
+/node_modules/
