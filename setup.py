@@ -5,7 +5,7 @@ here = path.abspath(path.dirname(__file__))
 package = json.load(open(path.join(here, 'package.json')))
 
 setup(
-    name=package['lexicons'],
+    name=package['name'],
     version=package['version'],
     author='Christopher Brown',
     author_email='chrisbrown@utexas.edu',
