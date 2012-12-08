@@ -2490,23 +2490,24 @@ pairs = [
 
 lookup = dict(pairs)
 
-def tokens(token_list):
-    # converts a list of tokens into dict of sentiments
-    sentiments = [lookup.get(word, 0) for word in token_list]
-    pos = sum(score for score in sentiments if score > 0)
-    neg = sum(score for score in sentiments if score < 0)
+def match(tokens):
+    return [lookup.get(word, 0) for word in tokens]
+
+keys = ['afinn_sum', 'afinn_mean', 'afinn_pos_sum', 'afinn_neg_sum', 'afinn_abs_sum']
+
+def from_tokens(tokens):
+    sentiments = match(tokens)
     # sentiment = float(sum(sentiments))/math.sqrt(len(sentiments))
     summed = sum(sentiments)
     length = len(sentiments)
     mean = float(summed) / length
-    sq_differences = [(sentiment - mean)**2 for sentiment in sentiments]
-    sd = math.sqrt(sum(sq_differences) / len(sq_differences))
+    # sq_differences = [(sentiment - mean)**2 for sentiment in sentiments]
+    # sd = math.sqrt(sum(sq_differences) / len(sq_differences))
 
-    return dict(sum=summed, abs_sum=sum(abs(s) for s in sentiments),
-        count=length, sd=sd, pos=pos, neg=neg)
+    return dict(afinn_sum=summed, afinn_mean=mean,
+        afinn_pos_sum=sum(score for score in sentiments if score > 0),
+        afinn_neg_sum=sum(score for score in sentiments if score < 0),
+        afinn_abs_sum=sum(abs(s) for s in sentiments))
 
-nonword = re.compile('\W+', re.I)
-def document(text):
-    # given a string document, split into words
-    token_list = nonword.split(text)
-    return tokens(token_list)
+def from_text(text):
+    return from_tokens(re.split('\W+', text.lower()))
