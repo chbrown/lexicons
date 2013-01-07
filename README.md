@@ -22,6 +22,18 @@ with to a trie, for faster (streaming) analysis.
 
 You can get the Arabsenti lexicon from [Muhammad Abdul-Mageed](http://mumageed.blogspot.com/).
 
+Citation form:
+
+    @inproceedings{abdul:2011,
+      title={Subjectivity and sentiment analysis of modern standard Arabic},
+      author={Abdul-Mageed, M. and Diab, M.T. and Korayem, M.},
+      booktitle={Proceedings of the 49th Annual Meeting of the Association for
+      Computational Linguistics: Human Language Technologies: short papers-Volume 2},
+      pages={587--591},
+      year={2011},
+      organization={Association for Computational Linguistics}
+    }
+
 It requires Python 2.7+.
 
 ## AFINN

@@ -5,7 +5,8 @@ from collections import Counter
 
 lexicon = '/usr/local/data/arabsenti_lexicon.txt'
 
-translator = {'0': 0, '2': -1, '1': 1}  # sentiment: # 0=NEUT # 1=POS # 2=NEG
+# sentiment: # 0=NEUT # 1=POS # 2=NEG
+translator = {'0': 0, '2': -1, '1': 1}
 
 lex = {}
 with codecs.open(lexicon, encoding='utf-8', mode='r') as txt_fp:
