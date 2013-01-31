@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import sys
 import re
 from collections import Counter
 import json # as json
@@ -86,3 +87,10 @@ def print_liwc_results(counts):
     for col, val in zip(full_columns, values):
         print '%16s %s' % (col, val)
 
+def main():
+    # warning: does not stream!
+    counts = from_text(sys.stdin.read())
+    print_liwc_results(counts)
+
+if __name__ == '__main__':
+    main()
