@@ -37,3 +37,6 @@ def split_document(document, number_of_splits):
 
     for start, end in zip(splits[::2], splits[1::2]):
         yield document[start:end]
+
+def mean(xs):
+    return sum(xs) / float(len(xs))
