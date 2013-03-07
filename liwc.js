@@ -10,11 +10,11 @@ function escapeRegex(text) {
   return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 }
 
-var json_trie = fs.readFileSync('/usr/local/data/liwc_2007.trie', 'utf8'),
-  _trie = JSON.parse(json_trie),
-  categories = ['funct', 'pronoun', 'ppron', 'i', 'we', 'you', 'shehe', 'they', 'ipron', 'article', 'verb', 'auxverb', 'past', 'present', 'future', 'adverb', 'preps', 'conj', 'negate', 'quant', 'number', 'swear', 'social', 'family', 'friend', 'humans', 'affect', 'posemo', 'negemo', 'anx', 'anger', 'sad', 'cogmech', 'insight', 'cause', 'discrep', 'tentat', 'certain', 'inhib', 'incl', 'excl', 'percept', 'see', 'hear', 'feel', 'bio', 'body', 'health', 'sexual', 'ingest', 'relativ', 'motion', 'space', 'time', 'work', 'achieve', 'leisure', 'home', 'money', 'relig', 'death', 'assent', 'nonfl', 'filler'],
-  full_columns = ['WC', 'WPS', 'Sixltr', 'Dic', 'Numerals'],
-  punctuations = [
+var json_trie = fs.readFileSync('/usr/local/data/liwc_2007.trie', 'utf8');
+var _trie = JSON.parse(json_trie);
+var categories = ['funct', 'pronoun', 'ppron', 'i', 'we', 'you', 'shehe', 'they', 'ipron', 'article', 'verb', 'auxverb', 'past', 'present', 'future', 'adverb', 'preps', 'conj', 'negate', 'quant', 'number', 'swear', 'social', 'family', 'friend', 'humans', 'affect', 'posemo', 'negemo', 'anx', 'anger', 'sad', 'cogmech', 'insight', 'cause', 'discrep', 'tentat', 'certain', 'inhib', 'incl', 'excl', 'percept', 'see', 'hear', 'feel', 'bio', 'body', 'health', 'sexual', 'ingest', 'relativ', 'motion', 'space', 'time', 'work', 'achieve', 'leisure', 'home', 'money', 'relig', 'death', 'assent', 'nonfl', 'filler'];
+var full_columns = ['WC', 'WPS', 'Sixltr', 'Dic', 'Numerals'];
+var punctuations = [
     {name: 'Period', chars: '.'},
     {name: 'Comma', chars: ','},
     {name: 'Colon', chars: ':'},
@@ -108,8 +108,9 @@ function from_text(text, opts) {
   // for (var k in punctuations)
 
   if (opts.normalize) {
-    for (var c = 2; column = full_columns[c]; c++)
+    for (var c = 2; column = full_columns[c]; c++) {
       counts[column] = counts[column] / counts.WC;
+    }
   }
 
   return counts;

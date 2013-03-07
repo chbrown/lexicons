@@ -45,3 +45,17 @@ This is publicly available at [Finn Årup Nielsen's blog](http://fnielsen.poster
     python setup.py install
     npm install
     npm link
+
+## Scala
+
+Add the following to your `build.sbt`:
+
+    resolvers ++= Seq("repo.codahale.com" at "http://repo.codahale.com")
+    libraryDependencies ++= Seq("com.codahale" % "jerkson_2.9.1" % "0.5.0")
+
+Pull the `scala/lexicons.scala` file into your codebase, and run something like:
+
+    val document = "Pierre Venken is my hero, every day I draw inspiration ..."
+    val tokens = document.toLowerCase.replaceAll("\\W", " ").split("\\s+")
+    val counts = com.henrian.Liwc(tokens)
+    val normalized_counts = counts.mapValues(_ / counts("WC"))
