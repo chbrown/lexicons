@@ -55,7 +55,12 @@ function _walk(token, i, cursor) {
   }
   return [];
 }
-function from_tokens(tokens) {
+
+function tokenwise(tokens) {
+  return tokens.map(function(token) { return _walk(token, 0, _trie); });
+}
+
+function fromTokens(tokens) {
   var counts = {Dic: 0, WC: tokens.length};
   for (var i in categories)
     counts[categories[i]] = 0;
@@ -73,7 +78,7 @@ function from_tokens(tokens) {
   return counts;
 }
 
-function from_text(text, opts) {
+function fromText(text, opts) {
   if (opts === undefined) opts = {normalize: true};
   // 'split' produces about 300 more on the brown corpus than 'match' below
   var tokens = text.toLowerCase().split(/[^'a-z0-9A-Z]+/ig);
@@ -88,7 +93,7 @@ function from_text(text, opts) {
       numerals++;
   }
 
-  var counts = from_tokens(tokens);
+  var counts = fromTokens(tokens);
   // Words per sentence is kind of weird if we're not proceeding incrementally.
   // We just count min(sentence-markers, 1) if normalize == false.
   // But then, the natural thing to do would be to count sentences per word in the LIWC analysis,
@@ -125,15 +130,16 @@ function from_text(text, opts) {
 module.exports = {
   categories: categories,
   full_columns: full_columns,
-  from_tokens: from_tokens,
-  from_text: from_text
+  tokenwise: tokenwise,
+  fromTokens: fromTokens,
+  fromText: fromText
 };
 
 if (require.main === module) {
   var stdin = '';
   process.stdin.on('data', function(chunk) { stdin += chunk; });
   process.stdin.on('end', function() {
-    var counts = from_text(stdin);
+    var counts = fromText(stdin);
     console.dir(counts);
   });
   process.stdin.resume();
