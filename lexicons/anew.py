@@ -1,22 +1,29 @@
-#!/usr/bin/env python
-import re
-from . import mean
-keys = ['anew_pleasure', 'anew_arousal', 'anew_dominance']
+from lexicons.base import LookupLexicon
+from lexicons.lib import stats
 
-lookup = dict()
 
-# anew looks like:
-# Word    Wdnum   ValMn   ValSD   AroMn   AroSD   DomMn   DomSD
-# abduction   621 2.76    2.06    5.53    2.43    3.49    2.38
-for line in open('/usr/local/data/anew.txt'):
-    token, _, pleasure, _, arousal, _, dominance, _ = line.split('\t')
-    if token and token != 'Word':
-        lookup[token] = (float(pleasure), float(arousal), float(dominance))
+class Anew(LookupLexicon):
+    # anew looks like:
+    # Word    Wdnum   ValMn   ValSD   AroMn   AroSD   DomMn   DomSD
+    # abduction   621 2.76    2.06    5.53    2.43    3.49    2.38
+    # ... 2476 total entries ...
+    corpus_filepath = '/usr/local/data/anew.txt'
 
-# should do stemming on lexicon and words, at least deplural
-def from_text(text):
-    text = text.lower()
-    tokens = re.findall(r'\w+', text)
-    matches = [lookup[token] for token in tokens if token in lookup]
-    pleasure, arousal, dominance = zip(*matches)
-    return dict(zip(keys, [mean(pleasure), mean(arousal), mean(dominance)]))
+    def _parse_corpus(self, corpus_file):
+        # skip first line (the column headers)
+        corpus_file.next()
+        for line in corpus_file:
+            token, _, pleasure, _, arousal, _, dominance, _ = line.split('\t')
+            yield token, (float(pleasure), float(arousal), float(dominance))
+
+    def read_token(self, token):
+        # yield pleasure, arousal, dominance
+        # yields a (pleasure, arousal, dominance) tuple
+        yield self._lookup.get(token, (0, 0, 0))
+
+    def summarize_document(self, document):
+        # TODO: stem on lexicon and words, at least depluralize
+        keys = ('anew_pleasure', 'anew_arousal', 'anew_dominance')
+        sentiments = list(self.read_document(document))
+        # pleasures, arousals, dominances = zip(*sentiments)
+        return dict(zip(keys, map(stats.mean, zip(*sentiments))))

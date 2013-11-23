@@ -1,96 +1,108 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import sys
 import re
+from lexicons.base import Lexicon
 from collections import Counter
-import json # as json
-
-word_re = re.compile(r"[a-z]['a-z]*")
-
-categories = ['funct', 'pronoun', 'ppron', 'i', 'we', 'you', 'shehe', 'they', 'ipron', 'article', 'verb', 'auxverb', 'past', 'present', 'future', 'adverb', 'preps', 'conj', 'negate', 'quant', 'number', 'swear', 'social', 'family', 'friend', 'humans', 'affect', 'posemo', 'negemo', 'anx', 'anger', 'sad', 'cogmech', 'insight', 'cause', 'discrep', 'tentat', 'certain', 'inhib', 'incl', 'excl', 'percept', 'see', 'hear', 'feel', 'bio', 'body', 'health', 'sexual', 'ingest', 'relativ', 'motion', 'space', 'time', 'work', 'achieve', 'leisure', 'home', 'money', 'relig', 'death', 'assent', 'nonfl', 'filler']
-
-# print open('/usr/local/data/liwc_2007.trie').read()
-_trie = json.load(open('/usr/local/data/liwc_2007.trie'))
-
-def _walk(token, i, cursor):
-    if '*' in cursor:
-        return True, cursor['*']
-    if '$' in cursor and i == len(token):
-        return True, cursor['$']
-    if i < len(token):
-        letter = token[i]
-        if letter in cursor:
-            return _walk(token, i + 1, cursor[letter])
-    return False, None
+import json
 
 
-def from_tokens(tokens):
-    counts = dict.fromkeys(categories + ['Dic'], 0)
-    for token in tokens:
-        success, cats = _walk(token, 0, _trie)
-        if success:
-            for category in cats:
-                counts[category] += 1
-            counts['Dic'] += 1
+class Liwc(Lexicon):
+    corpus_filepath = '/usr/local/data/liwc_2007.trie'
 
-    return counts
+    # category analysis variables:
+    category_keys = ['funct', 'pronoun', 'ppron', 'i', 'we', 'you', 'shehe',
+        'they', 'ipron', 'article', 'verb', 'auxverb', 'past', 'present', 'future',
+        'adverb', 'preps', 'conj', 'negate', 'quant', 'number', 'swear', 'social',
+        'family', 'friend', 'humans', 'affect', 'posemo', 'negemo', 'anx', 'anger',
+        'sad', 'cogmech', 'insight', 'cause', 'discrep', 'tentat', 'certain',
+        'inhib', 'incl', 'excl', 'percept', 'see', 'hear', 'feel', 'bio', 'body',
+        'health', 'sexual', 'ingest', 'relativ', 'motion', 'space', 'time', 'work',
+        'achieve', 'leisure', 'home', 'money', 'relig', 'death', 'assent', 'nonfl',
+        'filler']
 
-# full analysis variables below:
+    # full analysis variables:
+    meta_keys = ['WC', 'WPS', 'Sixltr', 'Dic', 'Numerals']
+    puncuation_keys = [
+        'Period', 'Comma', 'Colon', 'SemiC', 'QMark', 'Exclam',
+        'Dash', 'Quote', 'Apostro', 'Parenth', 'OtherP', 'AllPct']
+    punctuation = [
+        ('Period', '.'),
+        ('Comma', ','),
+        ('Colon', ':'),
+        ('SemiC', ';'),
+        ('QMark', '?'),
+        ('Exclam', '!'),
+        ('Dash', '-'),  # –—
+        ('Quote', '"'),  # “”
+        ('Apostro', "'"),  # ‘’
+        ('Parenth', '()[]{}'),
+        ('OtherP', '#$%&*+-/<=>@\\^_`|~')
+    ]
 
-full_columns = ['WC', 'WPS', 'Sixltr', 'Dic', 'Numerals'] + categories[:-1] + ['Period', 'Comma', 'Colon', 'SemiC', 'QMark', 'Exclam', 'Dash', 'Quote', 'Apostro', 'Parenth', 'OtherP', 'AllPct']
+    def __init__(self):
+        self.all_keys = self.meta_keys + self.category_keys[:-1] + self.puncuation_keys
 
-punctuation = [
-    ('Period', '.'),
-    ('Comma', ','),
-    ('Colon', ':'),
-    ('SemiC', ';'),
-    ('QMark', '?'),
-    ('Exclam', '!'),
-    ('Dash', '-'), # –—
-    ('Quote', '"'), # “”
-    ('Apostro', "'"), # ‘’
-    ('Parenth', '()[]{}'),
-    ('OtherP', '#$%&*+-/<=>@\\^_`|~')
-]
+        with open(self.corpus_filepath) as corpus_file:
+            self._trie = json.load(corpus_file)
 
-def from_text(text):
-    text = text.lower()
-    tokens = word_re.findall(text)
-    # tokens = [token for token in re.split(r'\b', text) if token != '' and token != None]
-    # tokens = re.split(r'\b\W+\b', text)
-    # tokens = re.findall(r"(\w|')+", text)
-    wc = max(len(tokens), 1)
-    sentence_count = max(len(re.findall(r"[.!?]+", text)), 1)
+    # standard Lexicon functionality:
 
-    counts = {'WC': wc, 'WPS': wc / float(sentence_count),
-        'Sixltr': len([1 for token in tokens if len(token) > 6]),
-        'Numerals': len([1 for token in tokens if token.isdigit()])}
+    def read_token(self, token, token_i=0, trie_cursor=None):
+        if trie_cursor is None:
+            trie_cursor = self._trie
 
-    category_counts = from_tokens(tokens)
-    counts.update(category_counts)
+        if '*' in trie_cursor:
+            for category in trie_cursor['*']:
+                yield category
+        elif '$' in trie_cursor and token_i == len(token):
+            for category in trie_cursor['$']:
+                yield category
+        elif token_i < len(token):
+            letter = token[token_i]
+            if letter in trie_cursor:
+                for category in self.read_token(token, token_i + 1, trie_cursor[letter]):
+                    yield category
 
-    character_counts = Counter(text)
-    for name, chars in punctuation:
-        counts[name] = sum(character_counts[char] for char in chars)
-    counts['Parenth'] = counts['Parenth'] / 2.0
-    counts['AllPct'] = sum(counts[name] for name, _ in punctuation)
+    def read_document(self, document, token_pattern=r"[a-z]['a-z]*"):
+        for match in re.finditer(token_pattern, document.lower()):
+            for category in self.read_token(match.group(0)):
+                yield category
 
-    for column in full_columns[2:]:
-        counts[column] = float(counts[column]) / wc
+    # extra (legacy) Liwc functionality:
 
-    return counts
+    def summarize_document(self, document, token_pattern=r"[a-z]['a-z]*", normalize=True):
+        sentence_count = len(re.findall(r"[.!?]+", document)) or 1
 
-def print_liwc_results(counts):
-    values = ['%d' % counts['WC'], '%0.2f' % counts['WPS']] + \
-        ['%0.2f' % (counts[column] * 100) for column in full_columns[2:]]
+        # tokens is a bit redundant because it duplicates the tokenizing done
+        # in read_document, but to keep read_document simple, we just run it again here.
+        tokens = re.findall(token_pattern, document.lower())
+        counts = Counter(self.read_document(document, token_pattern=token_pattern))
+        counts['Dic'] = sum(counts.values())
+        counts['WC'] = len(tokens)
+        counts['WPS'] = counts['WC'] / float(sentence_count)
+        counts['Sixltr'] = sum(len(token) > 6 for token in tokens)
+        counts['Numerals'] = sum(token.isdigit() for token in tokens)
 
-    for col, val in zip(full_columns, values):
-        print '%16s %s' % (col, val)
+        # count up all characters so that we can get punctuation counts quickly
+        character_counts = Counter(document)
+        for name, chars in self.punctuation:
+            counts[name] = sum(character_counts[char] for char in chars)
+        # Parenth is special -- we only count one half of them (to match the official LIWC application)
+        counts['Parenth'] = counts['Parenth'] / 2.0
+        counts['AllPct'] = sum(counts[name] for name, _ in self.punctuation)
 
-def main():
-    # warning: does not stream!
-    counts = from_text(sys.stdin.read())
-    print_liwc_results(counts)
+        if normalize:
+            # normalize all counts but the first two ('WC' and 'WPS')
+            for column in self.all_keys[2:]:
+                counts[column] = float(counts[column]) / float(counts['WC'])
 
-if __name__ == '__main__':
-    main()
+        # return a normal dict() rather than the Counter() instance
+        result = dict.fromkeys(self.category_keys + ['Dic'], 0)
+        result.update(counts)
+        return result
+
+    def print_summarization(self, counts):
+        absolutes = ['%d' % counts['WC'], '%0.2f' % counts['WPS']]
+        percentages = ['%0.2f' % (counts[key] * 100) for key in self.all_keys[2:]]
+
+        for key, value in zip(self.all_keys, absolutes + percentages):
+            print '%16s %s' % (key, value)

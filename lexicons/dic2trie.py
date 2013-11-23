@@ -16,6 +16,7 @@ pipe that file into this, get a json trie on stdout
 categories = {}
 trie = {}
 
+
 def add(key, categories):
     cursor = trie
     for letter in key:
