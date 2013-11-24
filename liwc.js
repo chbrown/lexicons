@@ -113,19 +113,13 @@ function fromText(text, opts) {
   // for (var k in punctuations)
 
   if (opts.normalize) {
-    for (var c = 2; column = full_columns[c]; c++) {
+    for (var c = 2; (column = full_columns[c]); c++) {
       counts[column] = counts[column] / counts.WC;
     }
   }
 
   return counts;
 }
-
-// def print_liwc_results(counts):
-//     values = ['%d' % counts['WC'], '%0.2f' % counts['WPS']] + \
-//         ['%0.2f' % (counts[column] * 100) for column in full_columns[2:]]
-//     for col, val in zip(full_columns, values):
-//         print '%16s %s' % (col, val)
 
 module.exports = {
   categories: categories,
