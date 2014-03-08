@@ -12,7 +12,7 @@ class Lexicon(object):
                 yield feature
 
 
-class LookupLexicon(object):
+class LookupLexicon(Lexicon):
     corpus_filepath = None
 
     def __init__(self):
